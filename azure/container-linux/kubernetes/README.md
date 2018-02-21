@@ -1,21 +1,22 @@
-# Typhoon <img align="right" src="https://storage.googleapis.com/poseidon/typhoon-logo.png">
+# Typhoon Azure
 
-Typhoon is a minimal and free Kubernetes distribution.
+`typhoon-azure` is a fork of [Typhoon](https://typhoon.psdn.io) which provides support for provisioning Typhoon Kubernetes clusters on Azure.
 
-* Minimal, stable base Kubernetes distribution
-* Declarative infrastructure and configuration
-* Free (freedom and cost) and privacy-respecting
-* Practical for labs, datacenters, and clouds
+## Disclaimer / Attribution
 
-Typhoon distributes upstream Kubernetes, architectural conventions, and cluster addons, much like a GNU/Linux distribution provides the Linux kernel and userspace components.
+This project only seeks to extend upstream Typhoon to support Azure.
 
-## Features <a href="https://www.cncf.io/certification/software-conformance/"><img align="right" src="https://storage.googleapis.com/poseidon/certified-kubernetes.png"></a>
+Upstream Typhoon is NOT maintained by the [author](https://github.com/justaugustus/) of this fork.
 
-* Kubernetes v1.9.3 (upstream, via [kubernetes-incubator/bootkube](https://github.com/kubernetes-incubator/bootkube))
-* Single or multi-master, workloads isolated on workers, [Calico](https://www.projectcalico.org/) or [flannel](https://github.com/coreos/flannel) networking
-* On-cluster etcd with TLS, [RBAC](https://kubernetes.io/docs/admin/authorization/rbac/)-enabled, [network policy](https://kubernetes.io/docs/concepts/services-networking/network-policies/)
-* Ready for Ingress, Dashboards, Metrics, and other optional [addons](https://typhoon.psdn.io/addons/overview/)
+All credit for the core code and maintenance of upstream Typhoon and all associated components belong to its' [authors](https://github.com/poseidon).
+
+## Contributing
+
+Issues and PRs to this repo are accepted, as long as they specifically relate to the instantiation of Typhoon clusters on Azure and remain true to the spirit and design of upstream Typhoon.
+
+Any issues or PRs related to the core functionality of Typhoon should be submitted to the [upstream project](https://github.com/poseidon/typhoon).
 
 ## Docs
 
-Please see the [official docs](https://typhoon.psdn.io) and the Azure [tutorial](https://typhoon.psdn.io/azure/).
+* [Using Typhoon Azure](docs/azure.md)
+* [Official upstream Typhoon docs](https://typhoon.psdn.io)
