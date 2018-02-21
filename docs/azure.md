@@ -98,7 +98,7 @@ module "azure-foo" {
   source = "git::https://github.com/justaugustus/typhoon-azure//azure/container-linux/kubernetes?ref=v1.9.3-azure.0"
 
   providers = {
-    azure = "azure.default"
+    azure = "azurerm.default"
     local = "local.default"
     null = "null.default"
     template = "template.default"
@@ -158,7 +158,7 @@ Plan the resources to be created.
 
 ```sh
 $ terraform plan
-Plan: 98 to add, 0 to change, 0 to destroy.
+Plan: 112 to add, 0 to change, 0 to destroy.
 ```
 
 Apply the changes to create the cluster.
@@ -166,11 +166,11 @@ Apply the changes to create the cluster.
 ```sh
 $ terraform apply
 ...
-module.azure-foo.null_resource.bootkube-start: Still creating... (4m50s elapsed)
-module.azure-foo.null_resource.bootkube-start: Still creating... (5m0s elapsed)
-module.azure-foo.null_resource.bootkube-start: Creation complete after 11m8s (ID: 3961816482286168143)
+module.azure-foo.null_resource.bootkube-start: Still creating... (3m30s elapsed)
+module.azure-foo.null_resource.bootkube-start: Still creating... (3m40s elapsed)
+module.azure-foo.null_resource.bootkube-start: Creation complete after 3m44s (ID: 9196128146093360807)
 
-Apply complete! Resources: 98 added, 0 changed, 0 destroyed.
+Apply complete! Resources: 112 added, 0 changed, 0 destroyed.
 ```
 
 In 4-8 minutes, the Kubernetes cluster will be ready.
@@ -183,30 +183,43 @@ In 4-8 minutes, the Kubernetes cluster will be ready.
 $ export KUBECONFIG=/home/user/.secrets/clusters/foo/auth/kubeconfig
 $ kubectl get nodes
 NAME             STATUS    AGE       VERSION        
-ip-10-0-12-221   Ready     34m       v1.9.3
-ip-10-0-19-112   Ready     34m       v1.9.3
-ip-10-0-4-22     Ready     34m       v1.9.3
+NAME               STATUS    ROLES     AGE       VERSION
+foo-controller-0   Ready     master    8m        v1.9.3
+foo-controller-1   Ready     master    8m        v1.9.3
+foo-controller-2   Ready     master    8m        v1.9.3
+foo-worker-0       Ready     node      8m        v1.9.3
+foo-worker-1       Ready     node      8m        v1.9.3
 ```
 
 List the pods.
 
 ```
 $ kubectl get pods --all-namespaces
-NAMESPACE     NAME                                      READY  STATUS    RESTARTS  AGE              
-kube-system   calico-node-1m5bf                         2/2    Running   0         34m              
-kube-system   calico-node-7jmr1                         2/2    Running   0         34m              
-kube-system   calico-node-bknc8                         2/2    Running   0         34m              
-kube-system   kube-apiserver-4mjbk                      1/1    Running   0         34m              
-kube-system   kube-controller-manager-3597210155-j2jbt  1/1    Running   1         34m              
-kube-system   kube-controller-manager-3597210155-j7g7x  1/1    Running   0         34m              
-kube-system   kube-dns-1187388186-wx1lg                 3/3    Running   0         34m              
-kube-system   kube-proxy-14wxv                          1/1    Running   0         34m              
-kube-system   kube-proxy-9vxh2                          1/1    Running   0         34m              
-kube-system   kube-proxy-sbbsh                          1/1    Running   0         34m              
-kube-system   kube-scheduler-3359497473-5plhf           1/1    Running   0         34m              
-kube-system   kube-scheduler-3359497473-r7zg7           1/1    Running   1         34m              
-kube-system   pod-checkpointer-4kxtl                    1/1    Running   0         34m              
-kube-system   pod-checkpointer-4kxtl-ip-10-0-12-221     1/1    Running   0         33m
+NAMESPACE     NAME                                       READY     STATUS    RESTARTS   AGE
+kube-system   kube-apiserver-f5dqx                       1/1       Running   0          8m
+kube-system   kube-apiserver-kzpkk                       1/1       Running   0          8m
+kube-system   kube-apiserver-v9kb4                       1/1       Running   4          8m
+kube-system   kube-controller-manager-8697c78bb4-7qzlm   1/1       Running   0          8m
+kube-system   kube-controller-manager-8697c78bb4-r4nzs   1/1       Running   0          8m
+kube-system   kube-dns-5c47645d88-sptmb                  3/3       Running   0          8m
+kube-system   kube-flannel-bdmm8                         2/2       Running   0          8m
+kube-system   kube-flannel-jlw4b                         2/2       Running   1          8m
+kube-system   kube-flannel-qbxbc                         2/2       Running   1          8m
+kube-system   kube-flannel-rldvl                         2/2       Running   2          8m
+kube-system   kube-flannel-x25cs                         2/2       Running   1          8m
+kube-system   kube-proxy-2cdfd                           1/1       Running   0          8m
+kube-system   kube-proxy-j8smb                           1/1       Running   0          8m
+kube-system   kube-proxy-ktvjg                           1/1       Running   0          8m
+kube-system   kube-proxy-qtghg                           1/1       Running   0          8m
+kube-system   kube-proxy-tllhf                           1/1       Running   0          8m
+kube-system   kube-scheduler-55cbdb765d-s7hvq            1/1       Running   0          8m
+kube-system   kube-scheduler-55cbdb765d-wjv2n            1/1       Running   0          8m
+kube-system   pod-checkpointer-8fgjt                     1/1       Running   0          8m
+kube-system   pod-checkpointer-8fgjt-foo-controller-2    1/1       Running   0          7m
+kube-system   pod-checkpointer-lpj2r                     1/1       Running   0          8m
+kube-system   pod-checkpointer-lpj2r-foo-controller-1    1/1       Running   0          7m
+kube-system   pod-checkpointer-pjtfl                     1/1       Running   0          8m
+kube-system   pod-checkpointer-pjtfl-foo-controller-0    1/1       Running   0          8m
 ```
 
 ## Going Further
