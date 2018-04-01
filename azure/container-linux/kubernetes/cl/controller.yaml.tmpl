@@ -7,7 +7,7 @@ systemd:
         - name: 40-etcd-cluster.conf
           contents: |
             [Service]
-            Environment="ETCD_IMAGE_TAG=v3.2.15"
+            Environment="ETCD_IMAGE_TAG=v3.3.2"
             Environment="ETCD_NAME=${etcd_name}"
             Environment="ETCD_ADVERTISE_CLIENT_URLS=https://${etcd_domain}:2379"
             Environment="ETCD_INITIAL_ADVERTISE_PEER_URLS=https://${etcd_domain}:2380"
@@ -66,6 +66,7 @@ systemd:
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/checkpoint-secrets
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/inactive-manifests
         ExecStartPre=/bin/mkdir -p /var/lib/cni
+        ExecStartPre=/bin/mkdir -p /var/lib/kubelet/volumeplugins
         ExecStartPre=/usr/bin/bash -c "grep 'certificate-authority-data' /etc/kubernetes/kubeconfig | awk '{print $2}' | base64 -d > /etc/kubernetes/ca.crt"
         ExecStartPre=-/usr/bin/rkt rm --uuid-file=/var/cache/kubelet-pod.uuid
         ExecStart=/usr/lib/coreos/kubelet-wrapper \
@@ -80,8 +81,10 @@ systemd:
           --lock-file=/var/run/lock/kubelet.lock \
           --network-plugin=cni \
           --node-labels=node-role.kubernetes.io/master \
+          --node-labels=node-role.kubernetes.io/controller="true" \
           --pod-manifest-path=/etc/kubernetes/manifests \
-          --register-with-taints=node-role.kubernetes.io/master=:NoSchedule
+          --register-with-taints=node-role.kubernetes.io/master=:NoSchedule \
+          --volume-plugin-dir=/var/lib/kubelet/volumeplugins
         ExecStop=-/usr/bin/rkt stop --uuid-file=/var/cache/kubelet-pod.uuid
         Restart=always
         RestartSec=10
@@ -107,29 +110,14 @@ storage:
       mode: 0644
       contents:
         inline: |
-          apiVersion: v1
-          kind: Config
-          clusters:
-          - name: local
-            cluster:
-              server: ${kubeconfig_server}
-              certificate-authority-data: ${kubeconfig_ca_cert}
-          users:
-          - name: kubelet
-            user:
-              client-certificate-data: ${kubeconfig_kubelet_cert}
-              client-key-data: ${kubeconfig_kubelet_key}
-          contexts:
-          - context:
-              cluster: local
-              user: kubelet
+          ${kubeconfig}
     - path: /etc/kubernetes/kubelet.env
       filesystem: root
       mode: 0644
       contents:
         inline: |
           KUBELET_IMAGE_URL=docker://gcr.io/google_containers/hyperkube
-          KUBELET_IMAGE_TAG=v1.9.3
+          KUBELET_IMAGE_TAG=v1.9.6
     - path: /etc/sysctl.d/max-user-watches.conf
       filesystem: root
       contents:
@@ -150,7 +138,7 @@ storage:
           # Move experimental manifests
           [ -n "$(ls /opt/bootkube/assets/manifests-*/* 2>/dev/null)" ] && mv /opt/bootkube/assets/manifests-*/* /opt/bootkube/assets/manifests && rm -rf /opt/bootkube/assets/manifests-*
           BOOTKUBE_ACI="$${BOOTKUBE_ACI:-quay.io/coreos/bootkube}"
-          BOOTKUBE_VERSION="$${BOOTKUBE_VERSION:-v0.10.0}"
+          BOOTKUBE_VERSION="$${BOOTKUBE_VERSION:-v0.11.0}"
           BOOTKUBE_ASSETS="$${BOOTKUBE_ASSETS:-/opt/bootkube/assets}"
           exec /usr/bin/rkt run \
             --trust-keys-from-https \
