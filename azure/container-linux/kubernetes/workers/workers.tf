@@ -2,26 +2,26 @@
 
 # Workers Availability Set
 resource "azurerm_availability_set" "workers" {
-  name                = "${var.cluster_name}-workers"
+  name                = "${var.name}-workers"
   location            = "${var.location}"
-  resource_group_name = "${azurerm_resource_group.rg.name}"
+  resource_group_name = "${var.resource_group}"
   managed             = true
 
   tags {
-    name = "${var.cluster_name}-worker"
+    name = "${var.name}-worker"
   }
 }
 
 # Worker VM
 resource "azurerm_virtual_machine" "worker" {
-  count = "${var.worker_count}"
+  count = "${var.count}"
 
-  name                  = "${var.cluster_name}-worker-${count.index}"
+  name                  = "${var.name}-worker-${count.index}"
   location              = "${var.location}"
   availability_set_id   = "${azurerm_availability_set.workers.id}"
-  resource_group_name   = "${azurerm_resource_group.rg.name}"
+  resource_group_name   = "${var.resource_group}"
   network_interface_ids = ["${element(azurerm_network_interface.worker.*.id, count.index)}"]
-  vm_size               = "${var.worker_type}"
+  vm_size               = "${var.instance_type}"
 
   delete_os_disk_on_termination    = true
   delete_data_disks_on_termination = true
@@ -34,7 +34,7 @@ resource "azurerm_virtual_machine" "worker" {
   }
 
   storage_os_disk {
-    name              = "${var.cluster_name}-worker-${count.index}-os"
+    name              = "${var.name}-worker-${count.index}-os"
     caching           = "ReadWrite"
     create_option     = "FromImage"
     managed_disk_type = "Premium_LRS"
@@ -43,7 +43,7 @@ resource "azurerm_virtual_machine" "worker" {
   }
 
   os_profile {
-    computer_name  = "${var.cluster_name}-worker-${count.index}"
+    computer_name  = "${var.name}-worker-${count.index}"
     admin_username = "core"
     admin_password = ""
     custom_data    = "${data.ct_config.worker_ign.rendered}"
@@ -59,27 +59,27 @@ resource "azurerm_virtual_machine" "worker" {
   }
 
   tags {
-    name = "${var.cluster_name}"
+    name = "${var.name}"
   }
 }
 
 # Worker NIC
 resource "azurerm_network_interface" "worker" {
-  count = "${var.worker_count}"
+  count = "${var.count}"
 
-  name                = "${var.cluster_name}-worker-${count.index}-nic"
+  name                = "${var.name}-worker-${count.index}-nic"
   location            = "${var.location}"
-  resource_group_name = "${azurerm_resource_group.rg.name}"
+  resource_group_name = "${var.resource_group}"
 
   ip_configuration {
     name                                    = "workerIPConfig"
-    subnet_id                               = "${azurerm_subnet.worker.id}"
+    subnet_id                               = "${var.subnet_id}"
     private_ip_address_allocation           = "dynamic"
     load_balancer_backend_address_pools_ids = ["${azurerm_lb_backend_address_pool.ingress.id}"]
   }
 
   tags {
-    name = "${var.cluster_name}"
+    name = "${var.name}"
   }
 }
 

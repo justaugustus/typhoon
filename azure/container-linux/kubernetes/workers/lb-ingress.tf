@@ -1,6 +1,6 @@
 # Ingress Azure Load Balancer DNS Record
 resource "azurerm_dns_a_record" "ingress" {
-  name                = "${var.cluster_name}-ing"
+  name                = "${var.name}-ing"
   zone_name           = "${var.dns_zone}"
   resource_group_name = "${var.dns_zone_rg}"
   ttl                 = 60
@@ -9,21 +9,21 @@ resource "azurerm_dns_a_record" "ingress" {
 
 # Ingress Public IP
 resource "azurerm_public_ip" "ingress" {
-  name                         = "${var.cluster_name}-pip-ingress"
+  name                         = "${var.name}-pip-ingress"
   location                     = "${var.location}"
-  resource_group_name          = "${azurerm_resource_group.rg.name}"
+  resource_group_name          = "${var.resource_group}"
   public_ip_address_allocation = "static"
 
   tags {
-    name = "${var.cluster_name}"
+    name = "${var.name}"
   }
 }
 
 # Controller Azure Load Balancer
 resource "azurerm_lb" "ingress" {
-  name                = "${var.cluster_name}-ingress"
+  name                = "${var.name}-ingress"
   location            = "${var.location}"
-  resource_group_name = "${azurerm_resource_group.rg.name}"
+  resource_group_name = "${var.resource_group}"
 
   frontend_ip_configuration {
     name                 = "ingress"
@@ -32,13 +32,13 @@ resource "azurerm_lb" "ingress" {
 }
 
 resource "azurerm_lb_backend_address_pool" "ingress" {
-  resource_group_name = "${azurerm_resource_group.rg.name}"
+  resource_group_name = "${var.resource_group}"
   loadbalancer_id     = "${azurerm_lb.ingress.id}"
   name                = "ingress"
 }
 
 resource "azurerm_lb_rule" "ingress_http" {
-  resource_group_name            = "${azurerm_resource_group.rg.name}"
+  resource_group_name            = "${var.resource_group}"
   loadbalancer_id                = "${azurerm_lb.ingress.id}"
   name                           = "ingress-http"
   protocol                       = "TCP"
@@ -50,7 +50,7 @@ resource "azurerm_lb_rule" "ingress_http" {
 }
 
 resource "azurerm_lb_rule" "ingress_https" {
-  resource_group_name            = "${azurerm_resource_group.rg.name}"
+  resource_group_name            = "${var.resource_group}"
   loadbalancer_id                = "${azurerm_lb.ingress.id}"
   name                           = "ingress-https"
   protocol                       = "TCP"
@@ -62,7 +62,7 @@ resource "azurerm_lb_rule" "ingress_https" {
 }
 
 resource "azurerm_lb_probe" "ingress" {
-  resource_group_name = "${azurerm_resource_group.rg.name}"
+  resource_group_name = "${var.resource_group}"
   loadbalancer_id     = "${azurerm_lb.ingress.id}"
   name                = "ingress-probe"
   protocol            = "Http"
